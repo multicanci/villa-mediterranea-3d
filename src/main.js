@@ -102,14 +102,14 @@ function initApp() {
     stencil: false,
   });
 
-  let highQuality = false;
-  let currentMaxDpr = 1.25;
+  let highQuality = true;
+  let currentMaxDpr = 1.8;
   function applyDpr(maxDpr) {
     currentMaxDpr = maxDpr;
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, currentMaxDpr));
     renderer.setSize(window.innerWidth, window.innerHeight);
   }
-  applyDpr(1.25);
+  applyDpr(1.8);
 
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFShadowMap;
