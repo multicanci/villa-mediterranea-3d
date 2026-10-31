@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Villa Mediterránea 3D — Exploración Hiperrealista</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23c8a97e'/%3E%3Cpath d='M7 22L16 9l9 13H7z' fill='%23fff8ee'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="./src/style.css" />
+</head>
+<body>
+  <div id="app">
+    <canvas id="scene-canvas" aria-label="Escena 3D interactiva de salón-comedor mediterráneo y patio con alberca"></canvas>
+
+    <!-- Pantalla de carga elegante -->
+    <div id="loading-overlay" aria-live="polite">
+      <div class="loader-card">
+        <div class="loader-spinner"></div>
+        <h1 class="loader-title">Villa Mediterránea 3D</h1>
+        <p id="loading-status" class="loader-subtitle">Generando iluminación global y materiales PBR…</p>
+      </div>
+    </div>
+
+    <!-- Comparador deslizante opcional con la imagen original -->
+    <div id="compare-layer" hidden>
+      <div id="compare-clip">
+        <img src="./reference.jpg" alt="Imagen de referencia original" loading="lazy" draggable="false" />
+      </div>
+      <div id="compare-divider">
+        <span class="compare-handle" aria-hidden="true">⇄</span>
+      </div>
+      <label class="sr-only" for="compare-range">Comparar escena 3D con imagen original</label>
+      <input id="compare-range" type="range" min="0" max="100" value="50" />
+      <div class="compare-badges">
+        <span class="badge-left">Referencia Original</span>
+        <span class="badge-right">Escena 3D en Tiempo Real</span>
+      </div>
+    </div>
+
+    <!-- Barra superior: Vistas rápidas y herramientas -->
+    <header class="hud-top">
+      <nav class="hud-pill camera-presets" aria-label="Puntos de vista de la villa">
+        <button type="button" class="preset-btn active" data-preset="original" title="Atajo: 1 o R">
+          1 · Vista Original
+        </button>
+        <button type="button" class="preset-btn" data-preset="dining" title="Atajo: 2">
+          2 · Comedor
+        </button>
+        <button type="button" class="preset-btn" data-preset="living" title="Atajo: 3">
+          3 · Salón
+        </button>
+        <button type="button" class="preset-btn" data-preset="courtyard" title="Atajo: 4">
+          4 · Patio y Alberca
+        </button>
+        <button type="button" class="preset-btn" data-preset="gallery" title="Atajo: 5">
+          5 · Galería
+        </button>
+      </nav>
+
+      <div class="hud-pill hud-actions">
+        <button type="button" id="btn-mode" class="action-btn" title="Alternar entre Caminar en 1ª persona y Órbita libre (Tecla O)">
+          Modo: Caminar
+        </button>
+        <button type="button" id="btn-quality" class="action-btn" title="Cambiar resolución de renderizado (Fluido / Alta Nitidez)">
+          Calidad: Rápida
+        </button>
+        <button type="button" id="btn-fan" class="action-btn" aria-pressed="true" title="Encender/pausar ventilador de techo">
+          Ventilador: ON
+        </button>
+        <button type="button" id="btn-compare" class="action-btn" aria-pressed="false" title="Comparar cortina deslizante con la foto original (Tecla C)">
+          Comparar Foto
+        </button>
+        <button type="button" id="btn-help" class="action-btn icon-btn" command="show-modal" commandfor="help-dialog" title="Controles y ayuda">
+          ?
+        </button>
+      </div>
+    </header>
+
+    <!-- Controles táctiles / clic en pantalla para desplazamiento cómodo sin teclado -->
+    <div class="hud-bottom">
+      <div class="walk-pad" aria-label="Controles de movimiento">
+        <button type="button" class="pad-btn" data-move="forward" aria-label="Avanzar">▲</button>
+        <div class="pad-row">
+          <button type="button" class="pad-btn" data-move="left" aria-label="Izquierda">◀</button>
+          <button type="button" class="pad-btn" data-move="backward" aria-label="Retroceder">▼</button>
+          <button type="button" class="pad-btn" data-move="right" aria-label="Derecha">▶</button>
+        </div>
+      </div>
+
+      <div class="hud-hint">
+        <span><strong>WASD / Flechas</strong> o <strong>clic en el suelo</strong> para desplazarte</span>
+        <span class="sep">·</span>
+        <span><strong>Arrastra</strong> para mirar</span>
+        <span class="sep">·</span>
+        <span><strong>Shift</strong> ir rápido</span>
+        <span class="sep">·</span>
+        <span><strong>R</strong> vista exacta original</span>
+      </div>
+    </div>
+
+    <!-- Diálogo nativo accesible con animaciones top-layer -->
+    <dialog id="help-dialog" closedby="any" aria-labelledby="help-title">
+      <div class="dialog-inner">
+        <div class="dialog-header">
+          <h2 id="help-title">Navegación por la Villa Mediterránea</h2>
+        </div>
+        <div class="dialog-body">
+          <ul class="controls-list">
+            <li><strong>Desplazamiento libre:</strong> Usa <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>, las <kbd>Flechas</kbd> o los botones direccionales en pantalla para caminar por el comedor, el salón, subir los escalones hacia el patio de la alberca o recorrer la galería acristalada.</li>
+            <li><strong>Caminar con un clic:</strong> Haz clic breve sobre cualquier punto del suelo, alfombra, escalones o terraza exterior para desplazarte suavemente hasta allí.</li>
+            <li><strong>Mirar alrededor:</strong> Mantén pulsado y arrastra con el ratón (o dedo en pantallas táctiles) en cualquier dirección.</li>
+            <li><strong>Velocidad y altura:</strong> Mantén <kbd>Shift</kbd> para caminar más rápido, y <kbd>E</kbd> / <kbd>Q</kbd> para ajustar sutilmente la altura de visión.</li>
+            <li><strong>Modo Órbita (<kbd>O</kbd>):</strong> Cambia a cámara orbital para inspeccionar detalles artesanales de cerca con la rueda del ratón.</li>
+            <li><strong>Comparador 1:1 (<kbd>C</kbd>):</strong> Activa la cortina interactiva para superponer la fotografía original con el render 3D en tiempo real desde la <em>Vista Original</em> (<kbd>1</kbd> o <kbd>R</kbd>).</li>
+          </ul>
+        </div>
+        <form method="dialog" class="dialog-footer">
+          <button type="submit" id="btn-close-help" class="primary-btn" value="ok" autofocus>Explorar escena</button>
+        </form>
+      </div>
+    </dialog>
+  </div>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
